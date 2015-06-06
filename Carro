@@ -1,0 +1,128 @@
+/*Bibliotecas*/
+#include <IRremote.h>
+
+/*Variaveis do IR*/
+int RECV_PIN = 6;
+
+IRrecv irrecv(RECV_PIN);
+decode_results results;
+
+/*Variaveis da PonteH*/
+int ForcaM1 = 2; //In1
+int PoM1 = 3;  //In2
+//Inversão dos pinos por software.
+int ForcaM2 = 5; //In4  
+int PoM2 = 4; //In3
+
+/*Variaveis gerais*/
+long acao;
+
+void setup()
+{
+  /*Setup Geral*/
+  Serial.begin(9600);
+
+  /*Setup IR*/
+  irrecv.enableIRIn(); // Habilita o IR para receber sinal
+
+  /*Setup PonteH*/
+  pinMode(ForcaM1, OUTPUT); 
+  pinMode(PoM1, OUTPUT); 
+  pinMode(ForcaM2, OUTPUT);   
+  pinMode(PoM2, OUTPUT);   
+  
+  digitalWrite(PoM1, LOW) ;   
+  digitalWrite(PoM2, LOW) ;
+  digitalWrite(ForcaM1, LOW) ;   
+  digitalWrite(ForcaM2, LOW) ;
+  
+}
+
+/*Rotinas para PonteH*/
+void frente()
+{
+  digitalWrite(PoM1, LOW) ;   
+  digitalWrite(ForcaM1, HIGH) ;   
+
+  digitalWrite(PoM2, LOW) ;
+  digitalWrite(ForcaM2, HIGH) ;
+}
+
+void tras()
+{
+  digitalWrite(PoM1, HIGH) ;   
+  digitalWrite(ForcaM1, LOW) ;   
+
+  digitalWrite(PoM2, HIGH) ;
+  digitalWrite(ForcaM2, LOW) ;
+}
+
+void esquerda()
+{
+  digitalWrite(PoM1, LOW) ;   
+  digitalWrite(ForcaM1, HIGH) ;   
+
+  digitalWrite(PoM2, HIGH) ;
+  digitalWrite(ForcaM2, LOW) ;
+}
+
+void direita()
+{
+  digitalWrite(PoM1, HIGH) ;   
+  digitalWrite(ForcaM1, LOW) ;   
+
+  digitalWrite(PoM2, LOW) ;
+  digitalWrite(ForcaM2, HIGH) ;
+}
+
+void parar()
+{
+  digitalWrite(PoM1, LOW) ;   
+  digitalWrite(ForcaM1, LOW) ;   
+
+  digitalWrite(PoM2, LOW) ;
+  digitalWrite(ForcaM2, LOW) ;
+}
+
+
+void loop()
+{
+  /*loop IR*/
+  if (irrecv.decode(&results)) 
+  {
+    acao = (results.value);
+    Serial.println(acao);
+    irrecv.resume(); // Receive the next value
+  } /*fim loop IR*/
+  
+  /*loop bluetooth*/
+  if (Serial.available()>0)
+  {
+    float red = Serial.parseFloat();
+    acao = long(red);
+    Serial.println(acao);
+  }/*fim loop bluetooth*/ 
+
+  /*case da ação*/
+  switch (acao)
+  {
+    case 16736925: //Frente
+      frente();
+    break;
+    case 16754775: //tras
+      tras();
+    break;
+    case 16720605: //esquerda
+      esquerda();
+    break;
+    case 16761405: //direita
+      direita();
+    break;
+    case 16712445: //ok
+      parar();
+    break;
+    default:
+      //nada a fazer     
+    break;
+  }/*fim case da ação*/
+}/*fim loop*/
